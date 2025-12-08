@@ -8,6 +8,10 @@ const mockLoadTranslations = jest.fn();
 const mockLoadCatalog = jest.fn();
 
 jest.mock('bring-shopping', () => {
+  const token = JSON.stringify({
+    exp: Date.now() / 1000 + 20000,
+  });
+  const base64Url = Buffer.from(token).toString('base64');
   return jest.fn().mockImplementation(() => ({
     login: mockLogin,
     getItems: mockGetItems,
@@ -15,6 +19,7 @@ jest.mock('bring-shopping', () => {
     removeItem: mockRemoveItem,
     loadTranslations: mockLoadTranslations,
     loadCatalog: mockLoadCatalog,
+    bearerToken: `a.${base64Url}.a`,
   }));
 });
 
