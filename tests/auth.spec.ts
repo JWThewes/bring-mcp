@@ -8,10 +8,15 @@ const mockBringLogin = jest.fn();
 const mockBringLoadLists = jest.fn();
 
 jest.mock('bring-shopping', () => {
+  const token = JSON.stringify({
+    exp: Date.now() / 1000 + 20000,
+  });
+  const base64Url = Buffer.from(token).toString('base64');
   return jest.fn().mockImplementation(() => {
     return {
       login: mockBringLogin,
       loadLists: mockBringLoadLists,
+      bearerToken: `a.${base64Url}.a`,
       // Add other methods as needed by tests in this file or globally if preferred
     };
   });
@@ -122,10 +127,10 @@ describe('MCP Bring! Server - Tool Registration (Post-Login Refactor)', () => {
     const loginTool = getTool('login');
     expect(loginTool).toBeUndefined(); // The login tool should not be registered
     expect(mockMcpServerInstance.tool).not.toHaveBeenCalledWith(
-      'login',
-      expect.any(String),
-      expect.any(Object),
-      expect.any(Function),
+        'login',
+        expect.any(String),
+        expect.any(Object),
+        expect.any(Function),
     );
   });
 });

@@ -3,20 +3,23 @@ import Bring from 'bring-shopping';
 export class BringClient {
   private bring = new Bring({ mail: process.env.MAIL!, password: process.env.PW! });
   private isLoggedIn = false;
+  private tokenExpiresAt: Date | undefined;
 
   private async _login() {
     try {
       await this.bring.login();
       this.isLoggedIn = true;
+      const bearerToken = this.bring['bearerToken'] as string;
+      const payload = JSON.parse(Buffer.from(bearerToken.split('.')[1], 'base64').toString());
+      this.tokenExpiresAt = new Date((payload.exp - 10000) * 1000);
     } catch (error) {
       this.isLoggedIn = false; // Ensure isLoggedIn is false if login fails
-      // Re-throw the original error to be handled by the caller
       throw error;
     }
   }
 
   private async ensureLoggedIn() {
-    if (!this.isLoggedIn) {
+    if (!this.isLoggedIn || !this.tokenExpiresAt || Date.now() > this.tokenExpiresAt?.getTime()) {
       await this._login();
     }
   }
